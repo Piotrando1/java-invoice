@@ -10,31 +10,44 @@ import pl.edu.agh.mwo.invoice.product.Product;
 
 public class Invoice {
 
-    private Map<Product, Integer> productIntegerMap = new HashMap<>();
+    private Map<Product, Integer> productQuantityOf = new HashMap<>();
 
-public void addProduct(Product product) {
-        productIntegerMap.put(product, 1);
+    public void addProduct(Product product) {
+        if (product == null){
+            throw new IllegalArgumentException("Product needs to have own name");
+        };
+        this.productQuantityOf.put(product,1);
     }
 
+
     public void addProduct(Product product, Integer quantity) {
-       for (int i = 0; i < quantity; i++) {
-           productIntegerMap.put(product, quantity);
+       if (quantity <= 0 || product == null) {
+           throw new IllegalArgumentException("Incorrect product quantity, it cant be zero, also product needs to have its own name");
        }
+        this.productQuantityOf.put(product,quantity);
     }
 
     public BigDecimal getNetPrice() {
-        BigDecimal sum = BigDecimal.ZERO;
-        for (Product product : productIntegerMap.keySet()) {
-            sum = sum.add(product.getPrice());
+        BigDecimal netSum = BigDecimal.ZERO;
+        for (Product product : productQuantityOf.keySet()) {
+            netSum = netSum.add(product.getPrice().multiply(new BigDecimal(productQuantityOf.get(product))));
         }
-        return sum;
+        return netSum;
     }
 
     public BigDecimal getTax() {
-        return BigDecimal.ZERO;
+        BigDecimal taxValue = BigDecimal.ZERO;
+        for (Product product : productQuantityOf.keySet()) {
+            taxValue = taxValue.add(product.getPrice().multiply(product.getTaxPercent()).multiply(new BigDecimal(productQuantityOf.get(product))));
+        }
+        return taxValue;
     }
 
     public BigDecimal getGrossPrice() {
-        return BigDecimal.ZERO;
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        for(Product product : productQuantityOf.keySet()) {
+            totalPrice = totalPrice.add(product.getPriceWithTax().multiply(new BigDecimal(productQuantityOf.get(product))));
+        }
+        return totalPrice;
     }
 }

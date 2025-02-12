@@ -15,17 +15,16 @@ public abstract class Product {
             throw new IllegalArgumentException("Product name cannot be null or empty.");
         }
 
-        if (price == null) {
-            throw new IllegalArgumentException("price cant have 0 value");
-        }
 
-        if (price.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Price cannot be negative");
+        if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Price cannot be negative or null");
         }
 
         if (tax == null) {
             throw new IllegalArgumentException("tax cant equal to 0");
         }
+
+
 
         this.name = name;
         this.price = price;
