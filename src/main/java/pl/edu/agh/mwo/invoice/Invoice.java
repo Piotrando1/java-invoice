@@ -1,30 +1,38 @@
 package pl.edu.agh.mwo.invoice;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import pl.edu.agh.mwo.invoice.product.Product;
 
 public class Invoice {
 
-    private Map<Product, Integer> productQuantityOf = new HashMap<>();
 
-    public void addProduct(Product product) {
-        if (product == null){
-            throw new IllegalArgumentException("Product needs to have own name");
-        };
-        this.productQuantityOf.put(product,1);
+    private static final AtomicInteger COUNTER = new AtomicInteger(100_000_000);
+    private final int number = COUNTER.incrementAndGet();
+    private final Map<Product, Integer> productQuantityOf = new HashMap<>();
+
+    public int getNumber() {
+        return number;
     }
 
+    public void addProduct(Product product) {
+        addProduct(product, 1);
+    }
 
     public void addProduct(Product product, Integer quantity) {
-       if (quantity <= 0 || product == null) {
-           throw new IllegalArgumentException("Incorrect product quantity, it cant be zero, also product needs to have its own name");
-       }
-        this.productQuantityOf.put(product,quantity);
+        if (product == null || quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("Produkt null lub zła ilość");
+        }
+
+        if (productQuantityOf.containsKey(product)) {
+            int oldQty = productQuantityOf.get(product);
+            productQuantityOf.put(product, oldQty + quantity);
+        } else {
+            productQuantityOf.put(product, quantity);
+        }
     }
 
     public BigDecimal getNetPrice() {
@@ -45,9 +53,29 @@ public class Invoice {
 
     public BigDecimal getGrossPrice() {
         BigDecimal totalPrice = BigDecimal.ZERO;
-        for(Product product : productQuantityOf.keySet()) {
+        for (Product product : productQuantityOf.keySet()) {
             totalPrice = totalPrice.add(product.getPriceWithTax().multiply(new BigDecimal(productQuantityOf.get(product))));
         }
         return totalPrice;
+    }
+
+    public String printFaktura() {
+        String text = "";
+
+        text += "Faktura nr " + getNumber() + "\n";
+
+        for (Product p : productQuantityOf.keySet()) {
+            int qty = productQuantityOf.get(p);
+            text += p.getName() + " | " + qty + " szt. | " + p.getPrice() + " PLN\n";
+        }
+
+        text += "Liczba pozycji na fakturze: " + productQuantityOf.size()+ "\n";
+        text += "Suma wszystkich produktow brutto: " + getGrossPrice()+ " PLN";
+        return text;
+
+    }
+
+    int getPositionsCount() {
+        return productQuantityOf.size();
     }
 }

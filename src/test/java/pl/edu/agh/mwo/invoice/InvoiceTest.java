@@ -125,4 +125,46 @@ public class InvoiceTest {
 
         invoice.addProduct(null);
     }
+
+    @Test
+    public void testInvoiceNumberHasCorrectLength() {
+        int number = invoice.getNumber();
+        Assert.assertThat(number, Matchers.greaterThan(100000000));
+    }
+
+    @Test
+    public void testTwoInvoicesHaveDifferentNumbers() {
+        int number1  = new Invoice().getNumber();
+        int number2  = new Invoice().getNumber();
+        Assert.assertNotEquals(number1, number2);
+    }
+    @Test
+    public void demoPrint() {
+        Invoice invoice = new Invoice();
+        invoice.addProduct(new TaxFreeProduct("Śliwka", new BigDecimal("0.50")), 20);
+        invoice.addProduct(new DairyProduct("Mleko łaciate", new BigDecimal("3.00")), 3);
+        invoice.addProduct(new DairyProduct("Ser Oscypek", new BigDecimal("6.00")), 5);
+
+        System.out.println(invoice.printFaktura());
+    }
+
+    @Test
+    public void addingOscypekTwiceIncrementsQuantity() {
+        Invoice invoice = new Invoice();
+
+        Product oscypek = new DairyProduct("Ser Oscypek", new BigDecimal("6.00"));
+
+        invoice.addProduct(oscypek, 5);
+        invoice.addProduct(oscypek, 2);
+
+        Assert.assertEquals(1, invoice.getPositionsCount());
+
+        Assert.assertThat(new BigDecimal("42.00"),
+                Matchers.comparesEqualTo(invoice.getNetPrice()));
+
+        String out = invoice.printFaktura();
+        System.out.println(out);
+        Assert.assertTrue(out.contains("Ser Oscypek | 7 szt."));
+    }
+
 }

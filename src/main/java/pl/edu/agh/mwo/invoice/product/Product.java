@@ -24,8 +24,6 @@ public abstract class Product {
             throw new IllegalArgumentException("tax cant equal to 0");
         }
 
-
-
         this.name = name;
         this.price = price;
         this.taxPercent = tax;
@@ -46,4 +44,18 @@ public abstract class Product {
     public BigDecimal getPriceWithTax() {
         return this.price.multiply(this.getTaxPercent()).add(this.price);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product)) return false;
+        Product another = (Product) o;
+        return name.equals(another.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
 }
